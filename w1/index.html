@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>worlds ~ w1</title>
+			<!-- General Meta Tags -->
+			<meta charset="UTF-8">
+			<!-- SEO -->
+				<!-- FB OG-->
+			<meta property="og:image" src="http://www.public-domain-image.com/free-images/textures-and-patterns/frozen-surface-ice-crystal-725x544.jpg">
+			<meta property="og:type" content="website"/>
+			<meta property="og:title" content="worlds ~ w1" />
+			<meta property="og:description"   content="click pls"/>
+			<meta property="og:url" content="http://fiala.uk/worlds/w1">
+				<!-- Twitter-->
+			<meta name="twitter:card" content="summary">
+			<meta name="twitter:title" content="worlds ~ w1">
+			<meta name="twitter:url" content="http://fiala.uk/worlds/w1">
+			<meta name="twitter:description" content="click pls" />
+			<meta name="twitter:image" content="http://www.public-domain-image.com/free-images/textures-and-patterns/frozen-surface-ice-crystal-725x544.jpg">
+				<!-- General -->
+			<meta name="title" content="worlds ~ w1" />
+			<meta name="description" content="click pls" />
+			<!-- Apple Web App Meta Tags -->
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		::-webkit-scrollbar {
+			width: 0 !important;
+		}
+
+		#message {
+			position: fixed;
+			z-index: 1000;
+			width: 100vw;
+			height: 100vh;
+			top: 0;
+			left: 0;
+			display: flex;
+			display: -ms-flexbox;
+			display: -webkit-flex;
+			display: -moz-flex;
+			justify-content: center;
+			-webkit-justify-content: center;
+			align-items: center;
+			-webkit-align-items: center;
+			flex-direction: column;
+			-webkit-flex-direction: column;
+			opacity: 0;
+			transition: opacity 1s;
+			-webkit-transition: opacity 1s;
+		}
+
+		#message h1 {
+			background: white;
+		}
+
+	</style>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.min.js"></script>
+</head>
+<body>
+<video style="display: none;" loop>
+</video>
+<script type="text/javascript">
+	var video = document.getElementsByTagName('video')[0]
+
+	//video.playbackRate = 0.1;
+
+	navigator.webkitGetUserMedia({ video: true }, function(stream){
+	  video.src    = webkitURL.createObjectURL(stream);
+	}, function(error){
+	  console.log("Failed to get a stream due to", error);
+	});
+
+	var playing = false;
+	var morphing = 0;
+
+	document.onkeydown = function(e) {
+		if (e.keyCode == 32) {
+			e.preventDefault();
+			if (!playing) {
+				intro_src.stop()
+				morphing = setInterval(function(){
+					new_geom(Math.random()*0.7)
+				},3000)
+			}
+			// 	video.play()
+			else
+				clearInterval(morphing)
+			// 	video.pause()
+			playing = !playing
+		}
+
+	}
+
+	var numScreens = 20;
+
+	var scene = new THREE.Scene();
+	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+	var screens = []
+
+	var renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+
+	var texture = new THREE.Texture( video );
+	texture.minFilter = THREE.LinearFilter;
+	var geometry = new THREE.SphereGeometry( 1.2, 1.2, 20, 20 );
+
+	var big_geom = new THREE.PlaneGeometry(30,10,1,1);
+
+	var material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture, shininess: 300, reflectivity: 10} );
+
+
+
+	var screen = new THREE.Mesh( big_geom, material );
+
+
+	for (var i = 0; i < numScreens; i++) {
+		var scr = {
+			mesh: new THREE.Mesh( geometry, material ),
+			rotation: Math.random()*0.02 - 0.04
+		}
+
+		scr.mesh.position.set(0.8*i-numScreens/2, 0, Math.random()*0.5-1)
+
+		screens.push(scr);
+		scene.add(scr.mesh);
+	}
+
+	screen.position.set(0,0,-3);
+
+	var light = new THREE.PointLight( 0xffffff, 1, 1000 );
+	var amb_light = new THREE.AmbientLight( 0xA0A0A0 ); // soft white light
+
+	light.position.set( 0, 2, 0 );
+
+	scene.add( screen );
+	scene.add( light );
+	scene.add( amb_light );
+
+	camera.position.z = 3;
+
+	var original_vertices = [];
+	var target_vertices = [];
+
+	geometry.vertices.forEach(function(v,i,verts){
+		var orig_obj = {
+			x: v.x,
+			y: v.y,
+			z: v.z
+		}
+
+		var targ_obj = {
+			x: v.x,
+			y: v.y,
+			z: v.z
+		}
+
+		original_vertices.push(orig_obj);
+		target_vertices.push(targ_obj);
+	})
+
+	var speed = 0.005;
+
+	function update_geom() {
+		geometry.vertices.forEach(function(v,i,verts){
+		  for (dim in verts[i]) {
+		  	if (dim == 'x' || dim == 'y' || dim == 'z') {
+		  		if (verts[i][dim] < target_vertices[i][dim]) {
+		  			verts[i][dim] += speed;
+		  		}
+		  		else if (verts[i][dim] > target_vertices[i][dim]) {
+		  			verts[i][dim] -= speed;
+		  		}
+		  	}
+
+		  }
+		});
+		geometry.verticesNeedUpdate = true;
+	}
+
+	function new_geom(amt) {
+		target_vertices.forEach(function(v,i,verts){
+				for (dim in verts[i]) {
+					if (dim == 'x' || dim == 'y' || dim == 'z') {
+						verts[i][dim] = original_vertices[i][dim] + Math.random()*amt - amt*2;
+					}
+				}
+		});
+	}
+
+	function render() {
+		requestAnimationFrame( render );
+		if( video.readyState === video.HAVE_ENOUGH_DATA ){
+		  texture.needsUpdate = true;
+		}
+		renderer.render( scene, camera );
+		if (playing) {
+			screens.forEach(function(s,i,scrns){
+				s.mesh.rotation.x += s.rotation
+				s.mesh.rotation.y += s.rotation
+			})
+			update_geom();
+		}
+
+
+	}
+	render();
+
+
+	setTimeout(function(){
+		material.bumpMap = texture;
+		material.normalMap = texture;
+		material.needsUpdate = true;
+	}, 30000)
+</script>
+<div id="message">
+	<h1>Click on the crystals &diams;</h1>
+</div>
+<script type="text/javascript">
+
+	var intro_buf = {};
+	var main_buf = {};
+	// Fix up prefixing
+	window.AudioContext = window.AudioContext || window.webkitAudioContext;
+	var context = new AudioContext();
+
+	var loaded = 0;
+
+	var intro_src, main_src;
+
+	function loadSound(url, buf) {
+	  var request = new XMLHttpRequest();
+	  request.open('GET', url, true);
+	  request.responseType = 'arraybuffer';
+
+	  // Decode asynchronously
+	  request.onload = function() {
+	    context.decodeAudioData(request.response, function(buffer) {
+
+	      window[buf] = buffer
+
+	      loaded++;
+	      if (loaded == 2)
+	      	initSound();
+
+
+	    }, null);
+	  }
+	  request.send();
+	}
+
+	function initSound() {
+
+		intro_src = context.createBufferSource();
+		main_src = context.createBufferSource();
+
+		intro_src.buffer = intro_buf;
+		main_src.buffer = main_buf;
+
+		intro_src.loop = true;
+		main_src.loop = true;
+
+		intro_src.connect(context.destination);
+		main_src.connect(context.destination);
+
+		intro_src.onended = function() {
+			main_src.start(0)
+		}
+
+		intro_src.start(0)
+
+	}
+
+	loadSound('mp3/webgl_intro.mp3', 'intro_buf');
+	loadSound('mp3/webgl.mp3', 'main_buf');
+
+
+
+
+	document.onclick = function() {
+		intro_src.stop()
+		document.querySelector('#message').style.opacity = 0;
+		if (!playing)
+			morphing = setInterval(function(){
+				new_geom(Math.random()*0.7)
+			},3000)
+		// 	video.play()
+		else
+			clearInterval(morphing)
+		// 	video.pause()
+		playing = !playing
+	}
+
+	setTimeout(function(){
+		document.querySelector('#message').style.opacity = 1;
+	}, 1000)
+</script>
+</body>
+</html>
