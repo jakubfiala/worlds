@@ -68,9 +68,9 @@
 	var video = document.getElementsByTagName('video')[0]
 
 	//video.playbackRate = 0.1;
-
-	navigator.webkitGetUserMedia({ video: true }, function(stream){
-	  video.src    = webkitURL.createObjectURL(stream);
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+	navigator.getUserMedia({ video: true }, function(stream){
+	  video.src    = URL.createObjectURL(stream);
 	}, function(error){
 	  console.log("Failed to get a stream due to", error);
 	});
