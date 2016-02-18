@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>worlds ~ w2</title>
+			<!-- General Meta Tags -->
+			<meta charset="UTF-8">
+			<!-- SEO -->
+				<!-- FB OG-->
+			<meta property="og:image" src="https://www.public-domain-image.com/free-images/textures-and-patterns/frozen-surface-ice-crystal-725x544.jpg">
+			<meta property="og:type" content="website"/>
+			<meta property="og:title" content="worlds ~ w1" />
+			<meta property="og:description"   content="click pls"/>
+			<meta property="og:url" content="https://fiala.uk/worlds/w1">
+				<!-- Twitter-->
+			<meta name="twitter:card" content="summary">
+			<meta name="twitter:title" content="worlds ~ w1">
+			<meta name="twitter:url" content="https://fiala.uk/worlds/w1">
+			<meta name="twitter:description" content="click pls" />
+			<meta name="twitter:image" content="https://www.public-domain-image.com/free-images/textures-and-patterns/frozen-surface-ice-crystal-725x544.jpg">
+				<!-- General -->
+			<meta name="title" content="worlds ~ w1" />
+			<meta name="description" content="click pls" />
+			<link rel="canonical" href="https://fiala.uk/worlds" />
+			<!-- Apple Web App Meta Tags -->
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		::-webkit-scrollbar {
+			width: 0 !important;
+		}
+
+		#message {
+			position: fixed;
+			z-index: 1000;
+			width: 100vw;
+			height: 100vh;
+			top: 0;
+			left: 0;
+			display: flex;
+			display: -ms-flexbox;
+			display: -webkit-flex;
+			display: -moz-flex;
+			justify-content: center;
+			-webkit-justify-content: center;
+			align-items: center;
+			-webkit-align-items: center;
+			flex-direction: column;
+			-webkit-flex-direction: column;
+			opacity: 0;
+			transition: opacity 1s;
+			-webkit-transition: opacity 1s;
+		}
+
+		#message h1 {
+			background: white;
+		}
+
+		body, html {
+			background: black;
+		}
+
+		body {
+			transition: filter 7s linear;
+			-webkit-transition: -webkit-filter 7s linear;
+			filter: blur(100px);
+			-webkit-filter: blur(100px);
+		}
+
+	</style>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.min.js"></script>
+</head>
+<body>
+<audio autoplay loop src="bg.mp3"></audio>
+<script type="text/javascript">
+	var img = new Image();
+	img.src = 'img.jpg';
+
+	var scene = new THREE.Scene();
+	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+	var renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+
+	var texture = new THREE.Texture( img );
+
+	img.addEventListener('load', function() {
+		texture.needsUpdate = true;
+		document.body.style['filter'] = 'blur(0px)';
+		document.body.style['-webkit-filter'] = 'blur(0px)';
+	})
+
+	var geometry = new THREE.PlaneGeometry(25,8,60,60);
+
+	var material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture, shininess: 300, reflectivity: 10} );
+
+
+	var screen = new THREE.Mesh( geometry, material );
+
+
+	screen.position.set(0,0,-3);
+
+	var light = new THREE.PointLight( 0xff3333, 1, 1000 );
+	var amb_light = new THREE.AmbientLight( 0xA0A0A0 ); // soft white light
+
+	light.position.set( 0, 0.5, 0 );
+
+	scene.add( screen );
+	scene.add( light );
+	//scene.add( amb_light );
+
+	camera.position.z = 3;
+
+	var t = 0;
+	var speed = 0.01
+
+	function render() {
+		requestAnimationFrame( render );
+		renderer.render( scene, camera );
+		t += speed;
+		if (t > 1000000000) t = 1;
+		change();
+		geometry.verticesNeedUpdate = true;
+	}
+	render();
+
+	function change() {
+		geometry.vertices.forEach(function(v,i,verts){
+			if (i % 2) {
+				//v.x = Math.sin(t)/2;
+				v.z = Math.cos(i)/2 + Math.sin(i)*Math.sin(t);
+			}
+			else if (i % 3) {
+				v.z = Math.cos(i)/2 + Math.sin(i)*Math.sin(t)*1.5;
+			}
+		})
+		screen.rotation.x = -1
+		geometry.verticesNeedUpdate = true;
+	}
+
+	document.addEventListener('mousemove', function(e) {
+		var y = window.innerHeight/2 - e.pageY;
+		var x = window.innerWidth/2 - e.pageX;
+		light.position.z = - 2 + y / window.innerHeight * 5;
+		light.position.x = x / window.innerWidth * 9;
+	})
+
+	window.addEventListener('resize', function onWindowResize(event) {
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	})
+
+	function utter() {
+		var text = Math.random() > 0.5 ? "You monster." : "You fool!";
+		var utterance = new SpeechSynthesisUtterance(text);
+		speechSynthesis.speak(utterance);
+	}
+
+	setInterval(utter, 15000)
+
+</script>
+<div id="message">
+	<h1>Hi</h1>
+</div>
+</body>
+</html>
